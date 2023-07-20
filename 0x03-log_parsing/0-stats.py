@@ -1,39 +1,54 @@
 #!/usr/bin/python3
 
 import sys
-import datetime
 
-def print_statistics(file_size, status_codes):
-    print(f"File size: {file_size}")
-    for code in sorted(status_codes.keys()):
-        print(f"{code}: {status_codes[code]}")
 
-def main():
-    total_file_size = 0
-    status_codes = {}
+def print_msg(dict_sc, total_file_size):
+    """
+    Method to print
+    Args:
+        dict_sc: dict of status codes
+        total_file_size: total of the file
+    Returns:
+        Nothing
+    """
 
-    try:
-        for i, line in enumerate(sys.stdin, 1):
-            try:
-                # Parse the input line to extract file size and status code
-                parts = line.split()
-                file_size = int(parts[-1])
-                status_code = int(parts[-2])
+    print("File size: {}".format(total_file_size))
+    for key, val in sorted(dict_sc.items()):
+        if val != 0:
+            print("{}: {}".format(key, val))
 
-                # Update total file size and status code count
-                total_file_size += file_size
-                status_codes[status_code] = status_codes.get(status_code, 0) + 1
 
-                if i % 10 == 0:
-                    print_statistics(total_file_size, status_codes)
+total_file_size = 0
+code = 0
+counter = 0
+dict_sc = {"200": 0,
+           "301": 0,
+           "400": 0,
+           "401": 0,
+           "403": 0,
+           "404": 0,
+           "405": 0,
+           "500": 0}
 
-            except (ValueError, IndexError):
-                # Skip the line if it does not follow the expected format
-                continue
+try:
+    for line in sys.stdin:
+        parsed_line = line.split()  # ✄ trimming
+        parsed_line = parsed_line[::-1]  # inverting
 
-    except KeyboardInterrupt:
-        # If a keyboard interruption (CTRL + C) occurs, print the final statistics
-        print_statistics(total_file_size, status_codes)
+        if len(parsed_line) > 2:
+            counter += 1
 
-if __name__ == "__main__":
-    main()
+            if counter <= 10:
+                total_file_size += int(parsed_line[0])  # file size
+                code = parsed_line[1]  # status code
+
+                if (code in dict_sc.keys()):
+                    dict_sc[code] += 1
+
+            if (counter == 10):
+                print_msg(dict_sc, total_file_size)
+                counter = 0
+
+finally:
+    print_msg(dict_sc, total_file_size)
